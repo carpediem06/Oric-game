@@ -1,0 +1,21 @@
+project liboric is
+
+sdl_home := external("SDL_HOME","D:\progs\SDL\1.2\");
+
+type display_type is ("graphics","text");
+display : display_type := External("display","graphics");
+
+for languages use ("C");
+
+   for source_dirs use ("src","src/" & display,sdl_home & "include",sdl_home & "include/SDL");
+   for object_dir use "obj";
+
+   package compiler is
+      for default_switches("C") use ("-O0","-Wall","-DNDEBUG","-g","-W","-Werror","-Wno-unused-label","-fdump-xref");
+   end compiler;
+
+   package linker is
+      for default_switches("C") use ("-L"&sdl_home&"bin","-L"&sdl_home&"lib/x86","-lSDL");
+   end linker;
+
+end liboric;

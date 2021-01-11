@@ -1,0 +1,3 @@
+#!/bin/sh
+
+rm opcodes; awk -v opcodes_file=opcodes -f asm2c.awk  ../xenon1.asm > /dev/null; sort -u opcodes -o opcodes

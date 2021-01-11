@@ -1,0 +1,19 @@
+with "../liboric/liboric.gpr";
+
+project ZorgonsRevenge is
+
+for languages use ("C");
+
+   for main use ("zorgon.c");
+   
+for source_dirs use ("src");
+   for object_dir use "obj";
+   for exec_dir use ".";
+
+   package compiler renames liboric.compiler;
+   
+   package linker extends liboric.linker is
+      for default_switches("c") use linker'default_switches("c") &("-lSDL_image","-lSDL", "-lm");
+   end linker;
+   
+end ZorgonsRevenge;

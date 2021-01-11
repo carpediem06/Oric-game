@@ -1,0 +1,3 @@
+#!/bin/sh
+
+arm-eabi-ar r ../lib/liboric_rtlib.a ndsbuild/*.o

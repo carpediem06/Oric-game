@@ -1,0 +1,98 @@
+#!/bin/sh
+#%
+#% Name: asm2c
+#%
+#% Part:
+#%
+#% Written by: jffabre
+#%
+
+PROGNAME=`basename $0`
+PROGDIR=$(cd `dirname $0`;pwd)
+TMPDIR=/tmp/asm2c.$$
+
+function f_cleanup
+{
+   #\rm -rf $TMPDIR
+   return;
+}
+
+trap "echo Cleaning up...;f_cleanup;exit 1" INT HUP TERM
+
+#mkdir -p $TMPDIR
+
+unalias rm 2>/dev/null
+unalias ls 2>/dev/null
+
+if [ "$1" = "-help" ] ; then
+   sed -n -e "s/^#% //p" -e "s/^#%//p" $0
+   exit 0
+fi
+
+if [ -z "$1" ] ; then
+   echo "Usage: $PROGNAME <asm file> <output directory>"
+   echo "Type $PROGNAME -help for deep help"
+   exit 1
+fi
+
+if [ ! -d "$2" ] ; then
+  echo "directory $2 does not exist"
+  exit 1
+fi
+
+prefix=`basename $1 .asm`
+
+awk -f $0.awk -v code_file=$2/${prefix}_code.c -v header_file=$2/$prefix.h "$1"
+#-v data_file=$2/${prefix}_data.h -v meminit_file=$2/${prefix}_meminit.c "$1"
+
+rewritten="$2/custom"
+if [ ! -f $rewritten.c ] ; then
+cat > "$rewritten.c" <<EOF
+#include "${prefix}.h"
+#include "$rewritten.h"
+
+int main()
+{
+    mem_init();
+    
+    run();
+    
+    return 0;
+}
+
+EOF
+fi
+
+if [ ! -f $rewritten.h ] ; then
+cat > "$rewritten.h" <<EOF
+#ifndef _CUSTOM_H
+#define _CUSTOM_H
+
+// put game constants & defines here
+
+#endif
+EOF
+fi
+
+makefile=$2/makefile
+
+if [ ! -f $makefile ] ; then
+cat > "$makefile" <<EOF
+
+EXE = $2/$prefix.exe
+OBJS = ${prefix}_code.o $rewritten.o
+
+all: \$(EXE)
+
+$rewritten.o : $rewritten.h $rewritten.c
+	gcc -c $rewritten.c
+
+${prefix}_code.o : $rewritten.h ${prefix}.h ${prefix}_code.c
+	gcc -I$PROGDIR/include -c ${prefix}_code.c
+
+\$(EXE) : \$(OBJS)
+	gcc -o \$(EXE) \$(OBJS) -L$PROGDIR/lib -loric_rtlib
+EOF
+fi
+
+

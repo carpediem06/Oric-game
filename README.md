@@ -26,7 +26,10 @@ If you want to open the .gpr project, you'll need Gnat Programming Studio availa
 '''
 let's go!
 
+![](./capture/zorgon_starring.png)
+
 ### How to play
 CTRL	"Jump Key"
 CTRL	"Fire key"
+![](./capture/zorgon_keypad.png)
 
